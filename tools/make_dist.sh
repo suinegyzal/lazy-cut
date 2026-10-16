@@ -30,7 +30,7 @@ VERSION="$(sed -n "s/^__version__[[:space:]]*=[[:space:]]*[\"']\([^\"']*\)[\"'].
 NAME="Lazy-Cut-$VERSION"
 
 # --- sanity checks -----------------------------------------------------------------------
-for f in install.command uninstall.command README.md README.ko.md requirements.txt assets/icon.icns assets/icon.png; do
+for f in install.command uninstall.command README.md README.en.md requirements.txt assets/icon.icns assets/icon.png; do
   [ -f "$f" ] || die "$f is missing"
 done
 bash -n install.command || die "install.command has a syntax error"
@@ -80,9 +80,9 @@ mkdir -p "$OUT"
 
 EXCLUDES=(--exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' --exclude='tests'
           --exclude='/test' --exclude='icon_preview.png')
-cp install.command uninstall.command README.md README.ko.md requirements.txt "$OUT/"
+cp install.command uninstall.command README.md README.en.md requirements.txt "$OUT/"
 chmod 755 "$OUT/install.command" "$OUT/uninstall.command"
-chmod 644 "$OUT/README.md" "$OUT/README.ko.md" "$OUT/requirements.txt"
+chmod 644 "$OUT/README.md" "$OUT/README.en.md" "$OUT/requirements.txt"
 for d in assets lazycut web; do
   [ -d "$d" ] || continue
   rsync -a "${EXCLUDES[@]}" "$d/" "$OUT/$d/"
