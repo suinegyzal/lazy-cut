@@ -1,7 +1,7 @@
 """Render the Lazy - Cut app icon → assets/icon.png (1024 px) and assets/icon.icns.
 
 Motif: a pair of scissors taking a nap ("z z") next to a dashed cut line —
-"lazy" + "cut", in white on a Team J-Curve blue gradient macOS squircle.
+"lazy" + "cut", in white on a dnoms blue gradient macOS squircle.
 Every icon size is drawn from vector shapes (supersampled, then downscaled), and the
 smallest sizes drop the fine details (dashes, small "z") so the icon stays legible.
 

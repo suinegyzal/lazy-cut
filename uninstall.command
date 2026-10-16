@@ -15,7 +15,7 @@
 set -uo pipefail   # no -e: keep going item by item and report what could not be moved
 
 APP_NAME="Lazy - Cut"
-BUNDLE_ID="com.teamjcurve.lazy.cut"
+BUNDLE_ID="com.dnoms.lazy.cut"
 SUPPORT_DIR="$HOME/Library/Application Support/LazyCut"
 CACHE_DIR="$HOME/Library/Caches/LazyCut"
 LOGS_DIR="$HOME/Library/Logs/LazyCut"

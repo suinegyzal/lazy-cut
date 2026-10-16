@@ -34,7 +34,7 @@ fi
 # ---------------------------------------------------------------------------------------
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 APP_NAME="Lazy - Cut"
-BUNDLE_ID="com.teamjcurve.lazy.cut"
+BUNDLE_ID="com.dnoms.lazy.cut"
 MIN_MACOS="13.5"
 BASE_PY="/usr/bin/python3"
 MODEL_REPO="mlx-community/whisper-large-v3-turbo"
@@ -523,7 +523,7 @@ cat >"$PLIST_TMP" <<PLIST
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Team J-Curve</string>
+	<string>dnoms</string>
 </dict>
 </plist>
 PLIST
