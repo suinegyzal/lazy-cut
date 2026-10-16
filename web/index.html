@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Lazy - Cut</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232450F5'/%3E%3Cpath d='M9 11h14M9 16h8M9 21h11' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/panels.css">
+</head>
+<body>
+ <div id="app" class="no-project">
+  <header id="topbar">
+    <div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6.5" fill="#2450F5"/><path d="M6.5 8.2h11M6.5 12h6.2M6.5 15.8h8.6" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M15.2 12h2.3" stroke="#6F9BFF" stroke-width="2" stroke-linecap="round"/></svg><span class="brand-name">Lazy - Cut</span></div><div id="project-title"></div><div id="save-state" role="status" aria-live="polite"></div>
+    <nav id="toolbar" aria-label="편집 도구">
+      <button type="button" class="tb-btn" data-cmd="open-video" title="영상 불러오기 (⌘O)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.2c0-.9.7-1.7 1.6-1.7h3.7l2 2.2h8.1c.9 0 1.6.7 1.6 1.6v8c0 .9-.7 1.7-1.6 1.7H5.1c-.9 0-1.6-.8-1.6-1.7z"/><path d="M12 11.2v4.6M9.7 13.5h4.6"/></svg>
+        <span>불러오기</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="save" title="저장 (⌘S) · 자동으로도 저장돼요">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 4.5h10.2l3.8 3.8v10.2c0 .6-.4 1-1 1h-13c-.6 0-1-.4-1-1v-13c0-.6.4-1 1-1z"/><path d="M8.5 4.5v4h6v-4"/><path d="M8 19.5v-5.2c0-.4.3-.8.8-.8h6.4c.5 0 .8.4.8.8v5.2"/></svg>
+        <span>저장</span>
+      </button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button type="button" class="tb-btn" data-cmd="undo" title="되돌리기 (⌘Z)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6 4.5 10.5 9 15"/><path d="M4.5 10.5h10a5 5 0 0 1 0 10H12"/></svg>
+        <span>되돌리기</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="redo" title="다시 실행 (⌘⇧Z)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6 4.5 4.5L15 15"/><path d="M19.5 10.5h-10a5 5 0 0 0 0 10H12"/></svg>
+        <span>다시 실행</span>
+      </button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button type="button" class="tb-btn" data-cmd="split-here" title="재생 위치에서 자르기 (C) · 타임라인을 더블클릭해도 돼요">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"/><path d="M7 7l-3 5 3 5M17 7l3 5-3 5"/></svg>
+        <span>자르기</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="split" title="클립 나누기 (Enter) · 선택한 단어부터 새 클립이 돼요">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="7" r="2.6"/><circle cx="6.5" cy="17" r="2.6"/><path d="M8.7 8.5 19.5 16.5M8.7 15.5 19.5 7.5"/></svg>
+        <span>클립 나누기</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="merge-next" title="클립 합치기 (⌘E) · 다음 클립과 합쳐요">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 4.5h15M4.5 19.5h15"/><path d="m8 8.5 4 3.5 4-3.5M8 15.5l4-3.5 4 3.5"/></svg>
+        <span>클립 합치기</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="resegment" title="자동 클립 나누기 · 자막 길이에 맞춰 다시 나눠요">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 7h9M4.5 12h11M4.5 17h7"/><path d="m18.3 12.6.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/><path d="m18.6 4.2.5 1.1 1.1.5-1.1.5-.5 1.1-.5-1.1-1.1-.5 1.1-.5z"/></svg>
+        <span>자동 나누기</span>
+      </button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button type="button" class="tb-btn" data-cmd="silence" title="무음 구간 줄이기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10v4M6.5 7.5v9"/><path d="M17.5 7.5v9M20.5 10v4"/><path d="m9.8 9.5 2.2 2.5-2.2 2.5M14.2 9.5 12 12l2.2 2.5"/></svg>
+        <span>무음 줄이기</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="fillers" title="군말 찾기 (음, 어 …)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5h13c1.1 0 2 .9 2 2v7.5c0 1.1-.9 2-2 2h-6.3L8 19.8v-3.3H5.5c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2z"/><path class="dot" d="M8.6 10.8h.01M12 10.8h.01M15.4 10.8h.01"/></svg>
+        <span>군말</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="ng" title="NG·반복 찾기 · 다시 말한 부분을 찾아요">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16.5 3 3 3-3 3"/><path d="M4.5 11V9.5c0-1.9 1.6-3.5 3.5-3.5h11.5"/><path d="m7.5 21-3-3 3-3"/><path d="M19.5 13v1.5c0 1.9-1.6 3.5-3.5 3.5H4.5"/></svg>
+        <span>NG·반복</span>
+      </button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button type="button" class="tb-btn" data-cmd="find" title="찾아 바꾸기 (⌘F)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m19.5 19.5-4.6-4.6"/></svg>
+        <span>찾아 바꾸기</span>
+      </button>
+      <button type="button" class="tb-btn" data-cmd="settings" title="설정">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h9.5M18.5 7.5H20M4 16.5h3M11 16.5h9"/><circle cx="16" cy="7.5" r="2.4"/><circle cx="9" cy="16.5" r="2.4"/></svg>
+        <span>설정</span>
+      </button>
+    </nav>
+    <button id="export-btn" data-cmd="export" class="primary" type="button" title="mp4 + 자막(SRT)으로 내보내기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14.5V4"/><path d="m7.8 8.2 4.2-4.2 4.2 4.2"/><path d="M5 13.5v4.5c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4.5"/></svg><span>내보내기</span></button>
+  </header>
+  <main id="workspace">
+    <section id="left" aria-label="미리보기">
+      <div id="player-wrap"><video id="video" playsinline preload="auto"></video><div id="caption-overlay"></div></div>
+      <div id="transport"></div>
+      <div id="stats"></div>
+    </section>
+    <div id="splitter"></div>
+    <section id="right" aria-label="대본">
+      <div id="editor-bar"></div>
+      <div id="editor" tabindex="0"></div>
+    </section>
+  </main>
+  <footer id="timeline-wrap"><canvas id="timeline"></canvas><canvas id="minimap"></canvas></footer>
+  <div id="start-screen"></div>
+  <div id="job-overlay" hidden></div>
+  <div id="modal-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+ </div>
+ <script type="module" src="/js/main.js"></script>
+</body>
+</html>

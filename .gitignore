@@ -1,0 +1,12 @@
+# private / local-only
+research/
+docs/
+dist/
+SPEC.md
+*.lazycut
+*.lazycut.bak
+# python / os
+__pycache__/
+*.pyc
+.venv/
+.DS_Store

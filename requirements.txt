@@ -1,0 +1,67 @@
+# Lazy - Cut — Python 패키지 목록 / Python dependencies
+#
+# install.command가 앱 안의 가상환경(Lazy - Cut.app/Contents/Resources/venv)에 설치해요.
+# 이 파일이 바뀌면 다음 설치 때 가상환경을 새로 만들어요 (해시 비교).
+# installed by install.command into the app's private venv; any change here
+# triggers a venv rebuild on the next install (hash compare).
+#
+# 검증된 조합 / verified set: Apple M1 · macOS 15 · /usr/bin/python3 3.9.6 (Xcode CLT), arm64.
+# The app itself only imports mlx_whisper, imageio_ffmpeg and numpy; everything else is
+# their transitive closure, pinned so every team Mac gets the exact same, known-good set.
+
+# --- Python 3.9 (macOS 기본 python3): 전부 고정 / fully pinned --------------------
+# 음성인식 / speech recognition (Apple Silicon GPU)
+mlx-whisper==0.4.3 ; python_version == "3.9"
+mlx==0.29.3 ; python_version == "3.9"
+mlx-metal==0.29.3 ; python_version == "3.9"
+# ffmpeg 7.1 실행 파일 포함 / ships the ffmpeg binary (h264_videotoolbox, libx264, aac)
+imageio-ffmpeg==0.6.0 ; python_version == "3.9"
+# 수치 계산 / numerics (numba 0.60 needs numpy < 2.1)
+numpy==2.0.2 ; python_version == "3.9"
+scipy==1.13.1 ; python_version == "3.9"
+numba==0.60.0 ; python_version == "3.9"
+llvmlite==0.43.0 ; python_version == "3.9"
+# mlx-whisper 의존성 / mlx-whisper deps
+torch==2.8.0 ; python_version == "3.9"
+tiktoken==0.14.0 ; python_version == "3.9"
+more-itertools==10.8.0 ; python_version == "3.9"
+tqdm==4.70.1 ; python_version == "3.9"
+regex==2026.1.15 ; python_version == "3.9"
+sympy==1.14.0 ; python_version == "3.9"
+mpmath==1.3.0 ; python_version == "3.9"
+networkx==3.2.1 ; python_version == "3.9"
+Jinja2==3.1.6 ; python_version == "3.9"
+MarkupSafe==3.0.3 ; python_version == "3.9"
+filelock==3.19.1 ; python_version == "3.9"
+fsspec==2025.10.0 ; python_version == "3.9"
+typing_extensions==4.16.0 ; python_version == "3.9"
+# 모델 내려받기 / model download (Hugging Face Hub)
+huggingface_hub==1.8.0 ; python_version == "3.9"
+hf-xet==1.6.0 ; python_version == "3.9"
+httpx==0.28.1 ; python_version == "3.9"
+httpcore==1.0.9 ; python_version == "3.9"
+h11==0.16.0 ; python_version == "3.9"
+anyio==4.12.1 ; python_version == "3.9"
+exceptiongroup==1.3.1 ; python_version == "3.9"
+idna==3.20 ; python_version == "3.9"
+certifi==2026.7.22 ; python_version == "3.9"
+requests==2.32.5 ; python_version == "3.9"
+urllib3==2.6.3 ; python_version == "3.9"
+charset-normalizer==3.5.2 ; python_version == "3.9"
+packaging==26.3 ; python_version == "3.9"
+PyYAML==6.0.3 ; python_version == "3.9"
+typer==0.23.2 ; python_version == "3.9"
+click==8.1.8 ; python_version == "3.9"
+shellingham==1.5.4 ; python_version == "3.9"
+rich==15.0.0 ; python_version == "3.9"
+markdown-it-py==3.0.0 ; python_version == "3.9"
+mdurl==0.1.2 ; python_version == "3.9"
+Pygments==2.21.0 ; python_version == "3.9"
+annotated-doc==0.0.5 ; python_version == "3.9"
+
+# --- 그 밖의 Python 버전 (검증 안 됨) / other Python versions (unverified) -----------
+# 나중에 macOS 기본 python3 버전이 바뀌어도 설치는 되도록 최소 조건만 적어 둬요.
+# Fallback so a future Command Line Tools Python still installs; pip resolves the rest.
+mlx-whisper>=0.4.3 ; python_version != "3.9"
+imageio-ffmpeg>=0.6.0 ; python_version != "3.9"
+numpy>=1.24 ; python_version != "3.9"

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Store Tests</title>
+  <style>
+    :root { --ink: #0A1317; --bg: #F4F6F9; --ok: #1F9D55; --bad: #E5484D; --gray: #8595A4; }
+    body { margin: 0; padding: 24px; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "Apple SD Gothic Neo", sans-serif; }
+    h1 { margin: 0 0 4px; font-size: 18px; }
+    p { margin: 0 0 16px; color: var(--gray); }
+    #summary { margin: 0 0 12px; font-weight: 700; }
+    #summary.ok { color: var(--ok); }
+    #summary.bad { color: var(--bad); }
+    pre { margin: 0; padding: 16px; border: 1px solid #E6EBEF; border-radius: 10px; background: #fff; font: 12.5px/1.6 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+    .pass { color: var(--ok); }
+    .fail { color: var(--bad); font-weight: 700; }
+    .info { color: var(--gray); }
+  </style>
+</head>
+<body>
+  <h1>Lazy Cut store tests (browser)</h1>
+  <p>Parity vectors from <code>/test/parity.json</code> (if served) + randomized op checks. The full suite runs headlessly: <code>jsc -m tests/js/store_test.js</code>.</p>
+  <div id="summary">실행 중…</div>
+  <pre id="log"></pre>
+  <script type="module">
+    import { store } from '/js/store.js';
+
+    const logEl = document.getElementById('log');
+    let passed = 0, failed = 0;
+    const line = (cls, text) => {
+      const s = document.createElement('span');
+      s.className = cls;
+      s.textContent = text + '\n';
+      logEl.appendChild(s);
+    };
+    const test = (name, fn) => {
+      try { fn(); passed++; line('pass', `PASS ${name}`); }
+      catch (e) { failed++; line('fail', `FAIL ${name} — ${e && e.message ? e.message : e}`); }
+    };
+    const assert = (c, m) => { if (!c) throw new Error(m || 'assertion failed'); };
+    const near = (a, b, eps, m) => assert(Math.abs(a - b) <= eps, `${m}: expected ${b}, got ${a}`);
+    const clone = (x) => JSON.parse(JSON.stringify(x));
+
+    function rangesNear(got, exp, msg) {
+      assert(got.length === exp.length, `${msg}: expected ${JSON.stringify(exp)}, got ${JSON.stringify(got)}`);
+      exp.forEach((r, i) => { near(got[i][0], r[0], 1e-6, `${msg}[${i}].s`); near(got[i][1], r[1], 1e-6, `${msg}[${i}].e`); });
+    }
+
+    function checkPartition(p, order) {
+      const toks = p.clips.flatMap((c) => { assert(c.words.length, `empty clip ${c.id}`); return c.words; });
+      near(toks[0].start, 0, 0.002, 'first start');
+      near(toks[toks.length - 1].end, p.source.duration, 0.002, 'last end');
+      for (let i = 0; i + 1 < toks.length; i++) assert(Math.abs(toks[i].end - toks[i + 1].start) <= 0.002, `contiguity at ${i}`);
+      if (order) assert(toks.map((t) => t.id).join() === order, 'token order changed');
+    }
+
+    function rng(seed) {
+      let a = seed >>> 0;
+      return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    }
+
+    function generated(nClips, perClip, seed) {
+      const r = rng(seed);
+      let t = 0, n = 0;
+      const clips = [];
+      for (let ci = 0; ci < nClips; ci++) {
+        const words = [];
+        for (let k = 0; k < perClip; k++) {
+          const s = t, e = Math.round((t + 0.12 + r() * 0.7) * 1000) / 1000;
+          const x = r();
+          const type = k > 0 && x < 0.18 ? 'gap' : k > 0 && x < 0.24 ? 'noise' : 'word';
+          const text = type === 'word' ? ['저희는', '팀', '제이커브가', '음', '공채를'][Math.floor(r() * 5)] : '';
+          words.push({ id: `w_${(n++).toString(36).padStart(8, '0')}`, type, text, orig: text, start: s, end: e, del: false, keep: null, flags: [], p: type === 'word' ? 0.9 : null });
+          t = e;
+        }
+        clips.push({ id: `c_${ci.toString(36).padStart(8, '0')}`, caption: null, flags: [], ngOf: null, words });
+      }
+      return { id: 'p_test', name: 'test', source: { duration: t, fpsNum: 30, fpsDen: 1 }, settings: {}, clips, markers: [] };
+    }
+
+    // 1) Parity vectors
+    try {
+      const res = await fetch('/test/parity.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      for (const c of data.cases || []) {
+        test(`parity: ${c.name}`, () => {
+          store.load(clone(c.project));
+          const exp = c.expected || {};
+          if (exp.keptRanges) rangesNear(store.keptRanges(), exp.keptRanges, 'keptRanges');
+          if (exp.outDuration !== undefined) near(store.outDuration(), exp.outDuration, 1e-6, 'outDuration');
+          for (const [t, o] of exp.srcToOut || []) near(store.srcToOut(t), o, 1e-6, `srcToOut(${t})`);
+          if (exp.autoCaptions) {
+            const auto = store.project.clips.map((cl) => store.autoCaption(cl));
+            const capOf = store.project.clips.map((cl) => store.captionOf(cl));
+            const want = JSON.stringify(exp.autoCaptions);
+            assert(JSON.stringify(auto) === want || JSON.stringify(capOf) === want, `autoCaptions: expected ${want}, got ${JSON.stringify(auto)}`);
+          }
+        });
+      }
+    } catch (e) {
+      line('info', `INFO parity.json not available (${e.message}) — skipped`);
+    }
+
+    // 2) Random ops: partition invariant + exact undo/redo
+    test('random ops keep the partition; undo/redo exact', () => {
+      const r = rng(42);
+      store.load(generated(30, 7, 42));
+      const order = store.project.clips.flatMap((c) => c.words.map((t) => t.id)).join();
+      const history = [JSON.stringify(store.project.clips)];
+      for (let step = 0; step < 90; step++) {
+        const n = store.flat().length, nc = store.project.clips.length;
+        const i = Math.floor(r() * n), ci = Math.floor(r() * nc), v = store.version;
+        switch (Math.floor(r() * 9)) {
+          case 0: store.setDeleted(i, Math.min(n - 1, i + 3), r() < 0.7); break;
+          case 1: store.splitClip(i); break;
+          case 2: store.mergeWithNext(ci); break;
+          case 3: store.splitToNext(i); break;
+          case 4: store.moveBoundary(i, store.flat()[i].tok.end + (r() - 0.5)); break;
+          case 5: store.shortenSilences({ min: 0.2, keep: 0.1, includeNoise: r() < 0.5 }); break;
+          case 6: store.setCaption(ci, r() < 0.5 ? null : `자막 ${step}`); break;
+          case 7: store.setWordText(i, `단어${step}`); break;
+          default: store.replaceAll('팀', '팀원'); break;
+        }
+        checkPartition(store.project, order);
+        if (store.version !== v) history.push(JSON.stringify(store.project.clips));
+      }
+      for (let k = history.length - 2; k >= 0; k--) {
+        assert(store.undo(), 'undo');
+        assert(JSON.stringify(store.project.clips) === history[k], `undo to step ${k} not exact`);
+      }
+      for (let k = 1; k < history.length; k++) {
+        assert(store.redo(), 'redo');
+        assert(JSON.stringify(store.project.clips) === history[k], `redo to step ${k} not exact`);
+      }
+    });
+
+    // 3) Performance on a large project
+    test('performance: 1,500 clips / 12,000 tokens', () => {
+      const t0 = performance.now();
+      store.load(generated(1500, 8, 3));
+      store.flat(); store.keptRanges();
+      for (let i = 0; i < 20000; i++) store.srcToOut(i * 0.05);
+      for (let i = 0; i < 30; i++) store.setDeleted(i * 300, i * 300, true);
+      for (let i = 0; i < 30; i++) store.undo();
+      const ms = performance.now() - t0;
+      line('info', `INFO ${ms.toFixed(1)} ms`);
+      assert(ms < 1500, `too slow: ${ms} ms`);
+    });
+
+    const sum = document.getElementById('summary');
+    sum.textContent = failed ? `실패 ${failed}개 · 통과 ${passed}개` : `모두 통과 (${passed}개)`;
+    sum.className = failed ? 'bad' : 'ok';
+  </script>
+</body>
+</html>
